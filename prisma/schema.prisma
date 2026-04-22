@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  stripeAccountId String? @unique
+  createdAt     DateTime  @default(now())
+  transactions  Transaction[]
+  taxReports    TaxReport[]
+}
+
+model Transaction {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  amount        Int
+  currency      String
+  stripeId      String    @unique
+  type          TransactionType
+  category      String
+  createdAt     DateTime  @default(now())
+}
+
+enum TransactionType {
+  PAYMENT
+  REFUND
+  DISPUTE
+  FEE
+}
+
+model TaxReport {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  year      Int
+  quarter   Int?
+  gstrate   Float
+  gstAmount Int
+  status    String
+  pdfUrl    String?
+  createdAt DateTime @default(now())
+}
